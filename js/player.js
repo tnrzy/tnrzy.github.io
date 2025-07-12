@@ -87,11 +87,19 @@
 
     // Update progress
     var setProgress = function (value) {
-        var currentSec = parseInt(value % 60) < 10 ? '0' + parseInt(value % 60) : parseInt(value % 60),
-            ratio = value / audio.duration * 100;
-
-        $('.timer').html(parseInt(value / 60) + ':' + currentSec + ' / ' + parseInt(audio.duration / 60) + ':' + (parseInt(audio.duration % 60) < 10 ? '0' + parseInt(audio.duration % 60) : parseInt(audio.duration % 60)));
-		$('.progress-bar').css('width', ratio + '%');
+        if (!audio || !audio.duration) {
+            $('.timer').html('0:00 / 0:00');
+            $('.progress-bar').css('width', 0 + '%');
+        }
+        else {
+            let currentSec = parseInt(value % 60) < 10 ? '0' + parseInt(value % 60) : parseInt(value % 60),
+                currentMin = parseInt(value / 60),
+                endMin = parseInt(audio.duration / 60),
+                endSec = parseInt(audio.duration % 60) < 10 ? '0' + parseInt(audio.duration % 60) : parseInt(audio.duration % 60),
+                ratio = value / audio.duration * 100;
+            $('.timer').html(currentMin + ':' + currentSec + ' / ' + endMin + ':' + endSec);
+		    $('.progress-bar').css('width', ratio + '%');
+        }
         // add
         localStorage.time = value;
         localStorage.song = currentTrack;
@@ -107,12 +115,9 @@
         var offsetX = e.offsetX || (e.pageX - $(this).offset().left);
         var percent = offsetX / $(this).width();
         var seekTime = percent * audio.duration;
-        console.log(audio.seekable);
         if (audio.seekable.length > 0) {
             var start = audio.seekable.start(0);
             var end = audio.seekable.end(0);
-            console.log('Seekable range: ' + start + ' to ' + end);
-            console.log('Seeking to: ' + seekTime);
             // 只允许跳转到已缓冲的区间
             if (seekTime >= start && seekTime <= end) {
                 audio.currentTime = seekTime;
@@ -124,7 +129,6 @@
             // 没有可寻址区间，通常是音频未加载
             showNotification('音频尚未加载完成');
         }
-        console.log('New currentTime: ' + audio.currentTime);
         updateProgress();
     });
 
