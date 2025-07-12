@@ -370,6 +370,7 @@ to {
     line-height: 13px;
     color: #DDD;
     padding: 7px;
+    border-bottom: none;
     text-decoration: none;
     display: none;
 }
