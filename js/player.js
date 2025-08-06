@@ -1,4 +1,25 @@
 (function ($) {
+    let localStorage_init = function () {
+        if (localStorage.volume == undefined) {
+            localStorage.volume = 1;
+        }
+        if (localStorage.muted == undefined) {
+            localStorage.muted = false;
+        }
+        if (localStorage.qplayer_mode == undefined) {
+            localStorage.qplayer_mode = 0;
+        }
+        if (localStorage.song == undefined) {
+            localStorage.song = 0;
+        }
+        if (localStorage.time == undefined) {
+            localStorage.time = 0;
+        }
+        if (localStorage.qplayer == undefined) {
+            localStorage.qplayer = false;
+        }
+    }
+    localStorage_init();
     // Settings
     let isShowNotification = false,
         isInitMarquee = true,
@@ -590,26 +611,6 @@
         localStorage.qplayer_mode = mode_index;
     });
 
-    let localStorage_init = function () {
-        if (localStorage.volume == undefined) {
-            localStorage.volume = 1;
-        }
-        if (localStorage.muted == undefined) {
-            localStorage.muted = false;
-        }
-        if (localStorage.qplayer_mode == undefined) {
-            localStorage.qplayer_mode = 0;
-        }
-        if (localStorage.song == undefined) {
-            localStorage.song = 0;
-        }
-        if (localStorage.time == undefined) {
-            localStorage.time = 0;
-        }
-        if (localStorage.qplayer == undefined) {
-            localStorage.qplayer = false;
-        }
-    }
 
     // var startX, endX;
     // $('#player .ctrl .musicTag').mousedown(function (event) {
