@@ -6,13 +6,16 @@
         shuffleIndex,
         autoClearTimer,
         autoShowTimer,
-        isFirstPlay = localStorage.qplayer == undefined ? true : false,
-        isShuffle = localStorage.qplayer == undefined ? false : localStorage.qplayer === 'true' ? true : false;
+        isFirstPlay = JSON.parse(localStorage.qplayer) == undefined ? true : false,
+        mode_index = JSON.parse(localStorage.qplayer_mode) == undefined ? 0 : JSON.parse(localStorage.qplayer_mode),
+        mode = ['list', 'all', 'one', 'random'],
+        volumeButton = $('#player .volume'),
+        volumeBarWrap = $('#player .volume-bar-wrap'),
+        volumeBar = $('#player .volume-bar'),
+        volumeBarBackground = $('#player .volume-bar-bg');
 	
-	// add
-    first = true;
-    index = 0;
-	
+    sessionStorage.autoPlay = autoplay;
+
     // Load playlist
     for (var i = 0; i < playlist.length; i++) {
         var item = playlist[i];
@@ -22,18 +25,31 @@
         }
     }
 
-	// add
-    var currentTrack = localStorage.song, audio, timeout;
-    var shuffle_array = localStorage.qplayer_shuffle_array;
-
-    if (isShuffle && shuffle_array != undefined && playlist.length === (shuffleArray = JSON.parse(shuffle_array)).length) {
-        shuffleIndex = 0;
-        if (currentTrack == undefined) {
-            currentTrack = shuffleArray[0];
-            $('#QPlayer .cover').attr('title', '点击关闭随机播放');
+    var currentTrack = JSON.parse(localStorage.song), audio, timeout;
+    var shuffle_array = JSON.parse(localStorage.qplayer_shuffle_array);
+    
+    if (mode[mode_index] === 'random') {
+        if(shuffle_array === undefined || shuffle_array === 'undefined' || playlist.length != (shuffleArray = JSON.parse(shuffle_array)).length) {
+            shuffleArray = Array.from({ length: playlist.length }, (_, i) => i);
+            shuffleArray = shuffle(shuffleArray);
+            localStorage.qplayer_shuffle_array = JSON.stringify(shuffleArray);
         }
+        else shuffleArray = JSON.parse(shuffle_array);
+
+        if (currentTrack == undefined || currentTrack === 'undefined' || currentTrack >= playlist.length) {
+            currentTrack = shuffleArray[0];
+            shuffleIndex = 0;
+        }
+        else {
+            for (var j = 0; j < shuffleArray.length; j++) {
+                if (shuffleArray[j] === currentTrack) {
+                    shuffleIndex = j;
+                    break;
+                }
+            }
+        }
+        $('#QPlayer .cover').attr('title', '点击关闭随机播放');
     } else {
-        isShuffle = false;
         $('#QPlayer .cover').attr('title', '点击开启随机播放');
     }
 	
@@ -44,7 +60,7 @@
     }
     if (totalHeight > 360) {
         $('#playlist').css("overflow", "auto");
-        if (isShuffle) {
+        if (mode[mode_index] === 'random') {
             var temp = 0;
             for (var j = 0; j < currentTrack; j++) {
                 temp += ($('#playlist li').eq(j).height() + 6);
@@ -55,14 +71,14 @@
 
     var play = function () {
 		// add
-        sessionStorage.autoPlay = "true"
-        audio.play();
+        sessionStorage.autoPlay = true;
+        timeout = setInterval(updateProgress, 500);
+        setTimeout(audio.play(), 300);
         if (isRotate) {
             $("#player .cover img").css("animation", "9.8s linear 0s normal none infinite rotate");
             $("#player .cover img").css("animation-play-state", "running");
         }
         $('.playback').addClass('playing');
-        timeout = setInterval(updateProgress, 500);
         //超过显示栏运行跑马灯
         if (isExceedTag()) {
             if (isInitMarquee) {
@@ -76,13 +92,14 @@
 
     var pause = function () {
         audio.pause();
+        updateProgress();
         $("#player .cover img").css("animation-play-state", "paused");
         $('.playback').removeClass('playing');
         clearInterval(timeout);
         if (isExceedTag()) {
             $('.marquee').marquee('pause');
         }
-        sessionStorage.autoPlay = ""
+        sessionStorage.autoPlay = false;
     }
 
     // Update progress
@@ -102,15 +119,13 @@
         }
         // add
         localStorage.time = value;
-        localStorage.song = currentTrack;
-		localStorage.volume = volume;
     }
 
     var updateProgress = function () {
         setProgress(audio.currentTime);
     }
 
-    $('.progress-bar-bg').click(function(e) {
+    $('#QPlayer .progress-bar-bg').click(function(e) {
         if (!audio || !audio.duration) return;
         var offsetX = e.offsetX || (e.pageX - $(this).offset().left);
         var percent = offsetX / $(this).width();
@@ -132,6 +147,65 @@
         updateProgress();
     });
 
+    // Switch mode
+    $('#QPlayer .mode').click(function () {
+        mode_index++;
+        mode_index %= mode.length;
+        localStorage.qplayer_mode = mode_index;
+        let mode_icon = $('#QPlayer .ctrl .mode');
+        switch(mode[mode_index]) {
+            case 'list':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.attr('title', '列表播放');
+                showNotification('已切换为列表播放');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'all':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.attr('title', '循环播放');
+                showNotification('已切换为循环播放');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'one':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.attr('title', '单曲循环');
+                showNotification('已切换为单曲循环');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'random':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.attr('title', '随机播放');
+                showNotification('已切换为随机播放');
+
+                $("#player .cover").attr("title", "点击关闭随机播放");
+
+                var temp = Array.from({ length: playlist.length }, (_, i) => i);
+                shuffleArray = shuffle(temp);
+                for (var j = 0; j < shuffleArray.length; j++) {
+                    if (shuffleArray[j] === currentTrack) {
+                        shuffleIndex = j;
+                        break;
+                    }
+                }
+                localStorage.qplayer_shuffle_array = JSON.stringify(shuffleArray);
+                break;
+            default:
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.attr('title', '列表播放');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+        }
+    });
+
     // Switch track
     var switchTrack = function (i) {
         if (i < 0) {
@@ -139,19 +213,12 @@
         } else if (i >= playlist.length) {
             track = currentTrack = 0;
         } else {
-            track = i;
+            track = currentTrack= i;
         }
         isInitMarquee = true;
         $('audio').remove();
         loadMusic(track);
         play();
-		
-		// add
-        if (first) {
-            volume = 0.3;
-            first = false 
-        }
-        audio.volume = localStorage.volume
     }
 
     // Shuffle
@@ -175,14 +242,32 @@
 
     // Fire when track ended
     var ended = function () {
-        pause();
-        audio.currentTime = 0;
-        if (isShuffle) {
-            shufflePlay(1);
-        } else {
-            if (currentTrack < playlist.length) switchTrack(++currentTrack);
-        }
-
+        updateProgress();
+        setTimeout(function () {
+            audio.currentTime = 0;
+            switch(mode[mode_index]) {
+                case 'list':
+                    if (currentTrack < playlist.length-1) switchTrack(++currentTrack);
+                    else {
+                        switchTrack(0);
+                        pause();
+                    }
+                    break;
+                case 'all':
+                    switchTrack(++currentTrack);
+                    break;
+                case 'one':
+                    play();
+                    break;
+                case 'random':
+                    shufflePlay(1);
+                    // 随机播放
+                    break;
+                default:
+                    if (currentTrack < playlist.length-1) switchTrack(++currentTrack);
+                    break;
+            }
+        }, 1000);
     }
 
     var beforeLoad = function () {
@@ -191,7 +276,7 @@
 
     // Fire when track loaded completely
     var afterLoad = function () {
-        if (autoplay == true) play();
+        if (sessionStorage.autoPlay === 'true') play();
     }
 
     // Load track
@@ -199,7 +284,7 @@
         var item = playlist[i];
         while (item.mp3 == "") {
             showNotification('歌曲地址为空，已自动跳过');
-            if (isShuffle) {
+            if (mode[mode_index] === 'random') {
                 if (++shuffleIndex === shuffleArray.length) {
                     shuffleIndex = 0;
                 }
@@ -214,43 +299,167 @@
         $('.musicTag').html('<strong>' + item.title + '</strong><span> - </span><span class="artist">' + item.artist + '</span>');
         $('#playlist li').removeClass('playing').eq(i).addClass('playing');
         audio = newaudio[0];
+        localStorage.song = currentTrack;
 
         audio.preload = "auto";
+        audio.volume = localStorage.volume ? JSON.parse(localStorage.volume) : 1;
+        audio.muted = localStorage.muted ? JSON.parse(localStorage.muted) : false;
         audio.addEventListener('progress', beforeLoad, false);
         audio.addEventListener('durationchange', beforeLoad, false);
         audio.addEventListener('canplay', afterLoad, false);
         audio.addEventListener('ended', ended, false);
     }
+    
+    let switchVolumeIcon = function() {
+        let volumeIcon = $('#player .volume');
+        if (volume() >= 0.75) {
+            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-up.svg)');
+            volumeIcon.css('mask', 'url(/images/audio/volume-up.svg)');
+        } else if (volume() > 0) {
+            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-down.svg)');
+            volumeIcon.css('mask', 'url(/images/audio/volume-down.svg)');
+        } else {
+            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-off.svg)');
+            volumeIcon.css('mask', 'url(/images/audio/volume-off.svg)');
+        }
+    }
 
-	// add
+    let volume = function(percentage, nostorage) {
+        percentage = parseFloat(percentage);
+        if (!isNaN(percentage)) {
+            percentage = Math.max(percentage, 0);
+            percentage = Math.min(percentage, 1);
+            volumeBar.css('height', (percentage * 100) + '%');
+            if (!nostorage) {
+                localStorage.volume = percentage;
+            }
+
+            audio.volume = percentage;
+            if (audio.muted) {
+                audio.muted = false;
+            }
+
+            switchVolumeIcon();
+        }
+
+        return audio.muted ? 0 : audio.volume;
+    }
+
+    volumeButton.click ((e) => {
+        if (audio.muted) {
+            volume(audio.volume, true);
+        } else {
+            audio.muted = true;
+            switchVolumeIcon();
+            volumeBar.css('height','0%');
+        }
+        localStorage.muted = audio.muted;
+    });
+
+    const thumbMove = (e) => {
+        let percentage = 1 - (e.pageY - volumeBarBackground.offset().top) / volumeBarBackground.height();
+        percentage = Math.max(percentage, 0);
+        percentage = Math.min(percentage, 1);
+        volume(percentage);
+    };
+
+    const thumbUp = (e) => {
+        document.onselectstart = null; // 恢复选中
+        volumeBarWrap.removeClass('volume-bar-wrap-active');
+        document.removeEventListener('mouseup', thumbUp);
+        document.removeEventListener('mousemove', thumbMove);
+        let percentage = 1 - (e.pageY - volumeBarBackground.offset().top) / volumeBarBackground.height();
+        percentage = Math.max(percentage, 0);
+        percentage = Math.min(percentage, 1);
+        volume(percentage);
+    };
+
+    volumeBarWrap.mousedown ((e) => {
+        document.onselectstart = () => false; // 禁止选中
+        window.getSelection()?.removeAllRanges(); // 清除当前选中内容（兼容性处理）
+        
+        volumeBarWrap.addClass('volume-bar-wrap-active');
+        document.addEventListener('mousemove', thumbMove);
+        document.addEventListener('mouseup', thumbUp);
+    });
+	
     var FirstLoad = function (i, time) {
-        if (i == undefined) {
-            i = 0
-            currentTrack = 0
-            shuffleIndex = 0
+        if (typeof i != 'number' || isNaN(i) || i >= playlist.length) {
+            i = 0;
+            currentTrack = 0;
+            shuffleIndex = 0;
+            time = 0;
         }
         loadMusic(i)
         if (time) {
             audio.currentTime = time
         }
         if (localStorage.volume) {
-            audio.volume = localStorage.volume
+            audio.volume = JSON.parse(localStorage.volume);
         }
-        if (sessionStorage.autoPlay == undefined) {
-            sessionStorage.autoPlay = "false"
+        volume(audio.volume, true);
+        if (localStorage.muted) {
+            audio.muted = JSON.parse(localStorage.muted);
+            if(audio.muted) {
+                switchVolumeIcon();
+                volumeBar.css('height','0%');
+            }
         }
+        if (sessionStorage.autoPlay !== 'true') {
+            sessionStorage.autoPlay = false;
+        }
+        if (mode_index === 'undefined' || mode_index === undefined) {
+            mode_index = 0;
+        }
+        let mode_icon = $('#QPlayer .ctrl .mode');
+        switch(mode[mode_index]) {
+            case 'list':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.attr('title', '列表播放');
 
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'all':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.attr('title', '循环播放');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'one':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.attr('title', '单曲循环');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+            case 'random':
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.attr('title', '随机播放');
+
+                $("#player .cover").attr("title", "点击关闭随机播放");
+                break;
+            default:
+                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.attr('title', '列表播放');
+
+                $("#player .cover").attr("title", "点击开启随机播放");
+                break;
+        }
+    }
+    
+    if (localStorage.volume == undefined) {
+        localStorage.volume = 1;
     }
 
-	// add
     FirstLoad(currentTrack, localStorage.time);
-    if (sessionStorage.autoPlay == "true") {
+    if (sessionStorage.autoPlay === 'true') {
         play()
     }
-    if (localStorage.volume == undefined) {
-        localStorage.volume = 0.3
-    }
-	
+
     $('.playback').on('click', function () {
         if ($(this).hasClass('playing')) {
             pause();
@@ -264,7 +473,7 @@
         return false;
     })
     $('.rewind').on('click', function () {
-        if (isShuffle) {
+        if (mode[mode_index] === 'random') {
             shufflePlay(0);
         } else {
             switchTrack(--currentTrack);
@@ -276,11 +485,12 @@
             } else {
                 audio.volume = 0;
             }
-            localStorage.volume = audio.volume
+            localStorage.volume = audio.volume;
+            switchVolumeIcon();
         }
     });
     $('.fastforward').on('click', function () {
-        if (isShuffle) {
+        if (mode[mode_index] === 'random') {
             shufflePlay(1);
         } else {
             switchTrack(++currentTrack);
@@ -292,13 +502,14 @@
             } else {
                 audio.volume = 1;
             }
-            localStorage.volume = audio.volume
+            localStorage.volume = audio.volume;
+            switchVolumeIcon();
         }
     });
 
     $('#playlist li').each(function (i) {
         $(this).on('click', function () {
-            if (isShuffle) {
+            if (mode[mode_index] === 'random') {
                 for (var j = 0; j < shuffleArray.length; j++) {
                     if (shuffleArray[j] === i) {
                         shuffleIndex = j;
@@ -312,7 +523,7 @@
         });
     });
 
-    $('#QPlayer .liebiao,#QPlayer .liebiao').on('click', function () {
+    $('#QPlayer .liebiao').on('click', function () {
         var pl = $('#playlist');
         if (pl.hasClass('go') === false) {
             pl.css({"max-height": "360px", "transition": "max-height .5s ease"});
@@ -335,12 +546,12 @@
                             } + ")", 1000)
                     } + ");", 500);
                 isFirstPlay = !isFirstPlay;
-                localStorage.qplayer = 'false';
+                localStorage.qplayer = false;
             }
-            mA.css("transform", "translateX(250px)");
+            mA.css("transform", "translateX(300px)");
             $('.ssBtn .adf').addClass('on');
         } else {
-            if($('#playlist').hasClass('go')) $('#QPlayer .liebiao,#QPlayer .liebiao').click();
+            if($('#playlist').hasClass('go')) $('#QPlayer .liebiao').click();
             mA.css("transform", "translateX(0px)");
             $('.ssBtn .adf').removeClass('on');
         }
@@ -348,15 +559,16 @@
     //$("div.ssBtn").click()
 
     $("#player .cover").on('click', function () {
-        isShuffle = !isShuffle;
-        if (isShuffle) {
-            $("#player .cover").attr("title", "点击关闭随机播放");
-            showNotification('已开启随机播放');
+        mode_index = mode_index === mode.length - 1 ? 0 : mode.length - 1;
+        if (mode[mode_index] === 'random') {
+            $("#player .ctrl .mode").css("-webkit-mask", "url(/images/audio/loop-random.svg)");
+            $("#player .ctrl .mode").css("mask", "url(/images/audio/loop-random.svg)");
+            $("#player .ctrl .mode").attr("title", "随机播放");
 
-            var temp = [];
-            for (var i = 0; i < playlist.length; i++) {
-                temp[i] = i;
-            }
+            $("#player .cover").attr("title", "点击关闭随机播放");
+            showNotification('已切换为随机播放');
+
+            var temp = Array.from({ length: playlist.length }, (_, i) => i);
             shuffleArray = shuffle(temp);
             for (var j = 0; j < shuffleArray.length; j++) {
                 if (shuffleArray[j] === currentTrack) {
@@ -366,11 +578,16 @@
             }
             localStorage.qplayer_shuffle_array = JSON.stringify(shuffleArray);
         } else {
+            mode_index = 0;
+            $("#player .ctrl .mode").css("-webkit-mask", "url(/images/audio/loop-list.svg)");
+            $("#player .ctrl .mode").css("mask", "url(/images/audio/loop-list.svg)");
+            $("#player .ctrl .mode").attr("title", "列表播放");
+
             $("#player .cover").attr("title", "点击开启随机播放");
-            showNotification('已关闭随机播放');
+            showNotification('已切换为列表播放');
             localStorage.removeItem('qplayer_shuffle_array');
         }
-        localStorage.qplayer = isShuffle;
+        localStorage.qplayer_mode = mode_index;
     });
 
 

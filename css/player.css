@@ -2,7 +2,7 @@
 	position:fixed;
 	overflow:hidden;
 	bottom:20px;
-	left:-250px;
+	left:-300px;
 	transition:transform .5s ease;
 	opacity:0.9;
 }
@@ -11,17 +11,29 @@
 	margin-top:3px;
 }
 #QPlayer .right {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 	float:right;
 	margin-top:3px;
+  position:relative;
 }
 #player {
 	float:left;
-	width:250px;
+	width:300px;
 	height:60px;
 	margin:0 auto;
 	position:relative;
 	background:rgb(255,255,255);
 	box-sizing:border-box;
+}
+#player .svg {
+  width: 15px;
+  height: 15px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-color: #919191;
 }
 #player .cover {
 	border:0px solid #333;
@@ -86,7 +98,7 @@
 	-webkit-user-select:none;
 	-o-user-select:none;
 	user-select:none;
-	background:url(../images/audio_sprite.png) no-repeat 0 9999px;
+	background:url(/images/audio/audio_sprite.png) no-repeat 0 9999px;
 }
 #player .ctrl .icon:hover,#player .ctrl .icon.enable {
 	opacity:1
@@ -94,17 +106,119 @@
 #player .ctrl .icon:active {
 	opacity:0.3
 }
-.liebiao {
-	background-image:url(../images/liebiao.png);
+#player .ctrl .liebiao {
 	background-position:-58px -14px !important;
 	width:13px;
 	height:10px;
 	position:relative;
 }
+#player .ctrl .volume {
+	-webkit-mask: url(/images/audio/volume-up.svg);
+  mask: url(/images/audio/volume-up.svg);
+  cursor: pointer;
+}
+#player .ctrl .lrc {
+	-webkit-mask:url(/images/audio/lrc.svg);
+  mask:url(/images/audio/lrc.svg);
+  cursor: pointer;
+}
+#player .ctrl .mode {
+	-webkit-mask:url(/images/audio/loop-list.svg);
+  mask:url(/images/audio/loop-list.svg);
+  cursor: pointer;
+}
+#player .ctrl .menu {
+	-webkit-mask:url(/images/audio/menu.svg);
+  mask:url(/images/audio/menu.svg);
+  cursor: pointer;
+}
 #player .ctrl .control {
 	margin-top:10px;
 	height:25px
 }
+.volume-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* 音量条样式 */
+.volume-slider {
+    position: absolute;
+    top: -40px; /* 调整音量条位置 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px; /* 音量条宽度 */
+    display: none; /* 默认隐藏 */
+    -webkit-appearance: none;
+    background: #ddd;
+    height: 4px;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    background: #3ca553;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    background: #3ca553;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-wrap {
+  position: relative;
+  display: inline-block;
+  cursor: pointer !important;
+
+  &:hover .volume-bar-wrap {
+      height: 40px;
+  }
+
+  .volume-bar-wrap {
+      position: absolute;
+      bottom: 15px;
+      right: -3px;
+      width: 25px;
+      height: 0;
+      z-index: 99;
+      overflow: hidden;
+      transition: all .2s ease-in-out;
+
+      &.volume-bar-wrap-active {
+          height: 40px;
+      }
+
+      .volume-bar-bg {
+          position: absolute;
+          bottom: 0;
+          right: 10px;
+          width: 4px;
+          height: 35px;
+          background: #ddd;
+          border-radius: 3px;
+          overflow: hidden;
+          
+          .volume-bar {
+              position: absolute;
+              bottom: 0;
+              right: 0;
+              width: 5px;
+              background-color: #3ca553;
+              transition: all 0.1s ease;
+          }
+      }
+  }
+}
+
 .rewind {
 	background-position:-33px 0 !important;
 	width:9px;
@@ -164,7 +278,7 @@
 #playlist {
 	float:left;
 	background:rgb(255,255,255);
-	width:248px;
+	width:298px;
 	margin:0;
 	padding:0;
 	position:relative;
@@ -195,7 +309,7 @@
 	padding:3px 15px 3px 11px;
 }
 #pContent {
-	width:270px;
+	width:320px;
 	box-shadow:1px 0px 5px 2px rgb(36,95,88);
 }
 #pContent .ssBtn {
@@ -219,7 +333,7 @@
 	height:20px;
 	top:20px;
 	position:relative;
-	background:transparent url("../images/2.png") repeat scroll 0% 0%;
+	background:transparent url("/images/audio/2.png") repeat scroll 0% 0%;
 }
 #pContent .ssBtn .adf.on {
 	transform:rotate(180deg);
