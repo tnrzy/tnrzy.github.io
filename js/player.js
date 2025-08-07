@@ -9,6 +9,9 @@
         if (localStorage.qplayer_mode == undefined) {
             localStorage.qplayer_mode = 0;
         }
+        if (localStorage.qplayer_shuffle_array == undefined) {
+            localStorage.qplayer_shuffle_array = JSON.stringify([]);
+        }
         if (localStorage.song == undefined) {
             localStorage.song = 0;
         }
