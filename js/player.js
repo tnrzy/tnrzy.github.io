@@ -50,7 +50,7 @@
     }
 
     var currentTrack = JSON.parse(localStorage.song), audio, timeout;
-    var shuffle_array = JSON.parse(localStorage.qplayer_shuffle_array);
+    var shuffle_array = localStorage.qplayer_shuffle_array;
     
     if (mode[mode_index] === 'random') {
         if(shuffle_array === undefined || shuffle_array === 'undefined' || playlist.length != (shuffleArray = JSON.parse(shuffle_array)).length) {
