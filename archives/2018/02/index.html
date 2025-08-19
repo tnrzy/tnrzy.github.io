@@ -71,7 +71,7 @@
   
 
 
-  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"dlYHaRzJXtmz2116zFmGe567-MdYXbMMI","app_key":"zgMuI7ZKr3c4oEVvNZ1QmIxi","server_url":null,"security":true}</script>
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"app_id":"dlYHaRzJXtmz2116zFmGe567-MdYXbMMI","app_key":"zgMuI7ZKr3c4oEVvNZ1QmIxi","server_url":null,"security":false}</script>
   <script src="/js/third-party/statistics/lean-analytics.js" defer></script>
 
 
@@ -337,14 +337,26 @@
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
 </noscript>
-<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-CN","enable":true,"serverURL":"tnrzy-waline.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"locale":{"placeholder":"来一场思维的碰撞 OVO ~"},"emoji":["https://unpkg.com/@waline/emojis@1.0.1/qq","https://unpkg.com/@waline/emojis@1.0.1/bilibili","https://unpkg.com/@waline/emojis@1.0.1/tieba"],"meta":["nick","mail","link"],"wordLimit":0,"login":"enable","pageSize":10,"el":"#waline","comment":true,"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","path":"/archives/2018/02/"}</script>
-<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
-<script>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-CN","enable":true,"serverURL":"tnrzy-waline.vercel.app","cssUrl":["https://unpkg.com/@waline/client@v3/dist/waline.css","https://unpkg.com/@waline/client@v3/dist/waline-meta.css"],"commentCount":false,"pageview":false,"libUrl":"https://unpkg.com/@waline/client@v3/dist/waline.js","locale":{"placeholder":"来一场思维的碰撞 OVO ~"},"emoji":["https://unpkg.com/@waline/emojis@1.2.0/qq","https://unpkg.com/@waline/emojis@1.2.0/bmoji","https://unpkg.com/@waline/emojis@1.2.0/tieba"],"meta":["nick","mail","link"],"wordLimit":0,"login":"enable","pageSize":10,"el":"#waline","comment":true,"path":"/archives/2018/02/"}</script>
+
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
+
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline-meta.css">
+
+<script type="module">
+import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
 document.addEventListener('page:loaded', () => {
   NexT.utils.loadComments(CONFIG.waline.el).then(() =>
     NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
   ).then(() => 
-    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+    init(Object.assign({
+      texRenderer: (blockMode, tex) =>
+        window.MathJax.startup.adaptor.outerHTML(
+          window.MathJax.tex2chtml(tex, {
+            display: blockMode,
+          }),
+        )
+    }, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
   );
 });
 </script>
@@ -374,9 +386,9 @@ document.addEventListener('page:loaded', () => {
 					</div>
 					<div class="timer left">0:00 / 0:00</div>
 					<div class="contr">
-						<div class="rewind icon"></div>
-						<div class="playback icon"></div>
-						<div class="fastforward icon"></div>
+						<div class="rewind svg"></div>
+						<div class="playback svg"></div>
+						<div class="fastforward svg"></div>
 					</div>
 					<div class="right">
 						<div class="volume-wrap">
@@ -389,7 +401,7 @@ document.addEventListener('page:loaded', () => {
 						</div>
 						<div class="lrc svg"></div>
 						<div class="mode svg"></div>
-						<div class="liebiao icon"></div>
+						<div class="liebiao svg"></div>
 					</div>
 				</div>
 			</div>

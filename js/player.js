@@ -179,32 +179,28 @@
         let mode_icon = $('#QPlayer .ctrl .mode');
         switch(mode[mode_index]) {
             case 'list':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-list.svg)');
                 mode_icon.attr('title', '列表播放');
                 showNotification('已切换为列表播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'all':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-all.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-all.svg)');
                 mode_icon.attr('title', '循环播放');
                 showNotification('已切换为循环播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'one':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-one.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-one.svg)');
                 mode_icon.attr('title', '单曲循环');
                 showNotification('已切换为单曲循环');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'random':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-random.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-random.svg)');
                 mode_icon.attr('title', '随机播放');
                 showNotification('已切换为随机播放');
 
@@ -221,8 +217,7 @@
                 localStorage.qplayer_shuffle_array = JSON.stringify(shuffleArray);
                 break;
             default:
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-list.svg)');
                 mode_icon.attr('title', '列表播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
@@ -337,14 +332,11 @@
     let switchVolumeIcon = function() {
         let volumeIcon = $('#player .volume');
         if (volume() >= 0.75) {
-            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-up.svg)');
-            volumeIcon.css('mask', 'url(/images/audio/volume-up.svg)');
+            volumeIcon.css('background-image', 'url(/images/audio/volume-up.svg)');
         } else if (volume() > 0) {
-            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-down.svg)');
-            volumeIcon.css('mask', 'url(/images/audio/volume-down.svg)');
+            volumeIcon.css('background-image', 'url(/images/audio/volume-down.svg)');
         } else {
-            volumeIcon.css('-webkit-mask', 'url(/images/audio/volume-off.svg)');
-            volumeIcon.css('mask', 'url(/images/audio/volume-off.svg)');
+            volumeIcon.css('background-image', 'url(/images/audio/volume-off.svg)');
         }
     }
 
@@ -385,11 +377,14 @@
         percentage = Math.max(percentage, 0);
         percentage = Math.min(percentage, 1);
         volume(percentage);
+
+        volumeButton.addClass('active');
     };
 
     const thumbUp = (e) => {
         document.onselectstart = null; // 恢复选中
         volumeBarWrap.removeClass('volume-bar-wrap-active');
+        volumeButton.removeClass('active');
         document.removeEventListener('mouseup', thumbUp);
         document.removeEventListener('mousemove', thumbMove);
         let percentage = 1 - (e.pageY - volumeBarBackground.offset().top) / volumeBarBackground.height();
@@ -397,6 +392,10 @@
         percentage = Math.min(percentage, 1);
         volume(percentage);
     };
+
+    volumeBarWrap.mouseover ((e) => {
+        volumeButton.addClass('active');
+    });
 
     volumeBarWrap.mousedown ((e) => {
         document.onselectstart = () => false; // 禁止选中
@@ -406,7 +405,11 @@
         document.addEventListener('mousemove', thumbMove);
         document.addEventListener('mouseup', thumbUp);
     });
-	
+
+    volumeBarWrap.mouseout ((e) => {
+        volumeButton.removeClass('active');
+    });
+
     var FirstLoad = function (i, time) {
         if (typeof i != 'number' || isNaN(i) || i >= playlist.length) {
             i = 0;
@@ -438,36 +441,31 @@
         let mode_icon = $('#QPlayer .ctrl .mode');
         switch(mode[mode_index]) {
             case 'list':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-list.svg)');
                 mode_icon.attr('title', '列表播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'all':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-all.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-all.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-all.svg)');
                 mode_icon.attr('title', '循环播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'one':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-one.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-one.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-one.svg)');
                 mode_icon.attr('title', '单曲循环');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
                 break;
             case 'random':
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-random.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-random.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-random.svg)');
                 mode_icon.attr('title', '随机播放');
 
                 $("#player .cover").attr("title", "点击关闭随机播放");
                 break;
             default:
-                mode_icon.css('-webkit-mask', 'url(/images/audio/loop-list.svg)');
-                mode_icon.css('mask', 'url(/images/audio/loop-list.svg)');
+                mode_icon.css('background-image', 'url(/images/audio/loop-list.svg)');
                 mode_icon.attr('title', '列表播放');
 
                 $("#player .cover").attr("title", "点击开启随机播放");
@@ -509,8 +507,7 @@
             } else {
                 audio.volume = 0;
             }
-            localStorage.volume = audio.volume;
-            switchVolumeIcon();
+            volume(audio.volume);
         }
     });
     $('.fastforward').on('click', function () {
@@ -526,8 +523,7 @@
             } else {
                 audio.volume = 1;
             }
-            localStorage.volume = audio.volume;
-            switchVolumeIcon();
+            volume(audio.volume);
         }
     });
 
@@ -585,8 +581,7 @@
     $("#player .cover").on('click', function () {
         mode_index = mode_index === mode.length - 1 ? 0 : mode.length - 1;
         if (mode[mode_index] === 'random') {
-            $("#player .ctrl .mode").css("-webkit-mask", "url(/images/audio/loop-random.svg)");
-            $("#player .ctrl .mode").css("mask", "url(/images/audio/loop-random.svg)");
+            $("#player .ctrl .mode").css("background-image", "url(/images/audio/loop-random.svg)");
             $("#player .ctrl .mode").attr("title", "随机播放");
 
             $("#player .cover").attr("title", "点击关闭随机播放");
@@ -603,8 +598,7 @@
             localStorage.qplayer_shuffle_array = JSON.stringify(shuffleArray);
         } else {
             mode_index = 0;
-            $("#player .ctrl .mode").css("-webkit-mask", "url(/images/audio/loop-list.svg)");
-            $("#player .ctrl .mode").css("mask", "url(/images/audio/loop-list.svg)");
+            $("#player .ctrl .mode").css("background-image", "url(/images/audio/loop-list.svg)");
             $("#player .ctrl .mode").attr("title", "列表播放");
 
             $("#player .cover").attr("title", "点击开启随机播放");
